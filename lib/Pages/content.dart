@@ -22,8 +22,9 @@ class ContentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      
       home: defaultTargetPlatform == TargetPlatform.iOS ||
-              defaultTargetPlatform == TargetPlatform.android
+            defaultTargetPlatform == TargetPlatform.android
           ? const HomeMobile()
           : const HomePage(),
     );
@@ -42,9 +43,9 @@ class AppConfig {
   static const double shadowSpreadRadius = 2.0;
 
   // Colors
-  static const Color boxBackgroundColor = Colors.white;
-  static const Color boxShadowColor = Colors.black26;
-  static const Color borderColor = Colors.grey;
+  static const Color boxBackgroundColor = Color.fromARGB(255, 212, 197, 174);
+  static const Color boxShadowColor = Colors.grey;
+  static const Color borderColor = Colors.cyan;
 
   // Font sizes
   static const double titleFontSize = 16.0;
@@ -118,25 +119,12 @@ class HomeMobile extends StatelessWidget {
       appBar:  CustomAppBar(),
       endDrawer: const CustomSidebar(),
       body: Container(
-        color: Colors.blue.shade600,
+        // color: const Color.fromARGB(255, 247,230,202),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Static Heading bar
-            Container(
-              padding: const EdgeInsets.all(AppConfig.boxPadding),
-              color: AppConfig.boxBackgroundColor,
-              child: const Center(
-                child: Text(
-                  'Birla White',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
+            
 
             // Scrollable content
             Expanded(
@@ -398,26 +386,10 @@ class HomePage extends StatelessWidget {
       appBar:  CustomAppBar(),
       endDrawer: const CustomSidebar(),
       body: Container(
-        color: Colors.blue.shade600,
+        color: const Color.fromARGB(255, 247,230,202),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Static Heading bar
-            Container(
-              padding: const EdgeInsets.all(AppConfig.boxPadding),
-              color: AppConfig.boxBackgroundColor,
-              child: const Center(
-                child: Text(
-                  'Birla White',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-
             // Scrollable content
             Expanded(
               child: SingleChildScrollView(
@@ -433,37 +405,50 @@ class HomePage extends StatelessWidget {
                       child: const CustomCarousel(),
                     ),
 
-                    // Main content
                     Padding(
                       padding: const EdgeInsets.all(AppConfig.boxPadding),
                       child: Column(
-                        children: [
-                          // Boxes layout adjustment based on screen size
-                          if (isSmallScreen)
-                            Column(
-                              children: AppConfig.boxContents.entries
-                                  .map((entry) => _buildBox(
-                                        title: entry.key,
-                                        values: entry.value,
-                                        height: (screenHeight / 2) -
-                                            (AppConfig.boxPadding * 2),
-                                        width: screenWidth,
-                                      ))
-                                  .toList(),
-                            )
-                          else
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: AppConfig.boxContents.entries
-                                  .map((entry) => _buildBox(
-                                        title: entry.key,
-                                        values: entry.value,
-                                        width: (screenWidth / 4) -
-                                            (AppConfig.boxPadding * 2),
-                                        height: screenHeight / 2,
-                                      ))
-                                  .toList(),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [ Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                        const Text(
+                        'Order History',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        ),
+                            const SizedBox(), // Empty widget for spacing
+                            TextButton(
+                              child: Text('view all',
+                                style: const TextStyle( 
+                                  fontSize: 18,
+                                  color: Colors.white,
+                              )),
+                              onPressed: () {},
                             ),
+                          ],
+                        ),
+                        ],
+                        ),),
+                        const SizedBox(height: 16),
+                        SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                          orderCard(1),
+                          const SizedBox(width: 16),
+                          orderCard(2),
+                          const SizedBox(width: 16), 
+                          orderCard(3)
+                          ],
+                        ),
+                        
+                        ),
+                    // Main content
+                   
 
                           const SizedBox(height: 16),
 
@@ -483,107 +468,16 @@ class HomePage extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ],
+        ),
+        ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
+            
+        );
   }
 
   // Widget for building individual boxes
-  Widget _buildBox({
-    required String title,
-    required List<String> values,
-    double? width,
-    required double height,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      margin: const EdgeInsets.only(bottom: AppConfig.boxPadding),
-      decoration: BoxDecoration(
-        color: AppConfig.boxBackgroundColor,
-        borderRadius: BorderRadius.circular(AppConfig.borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppConfig.boxShadowColor,
-            blurRadius: AppConfig.shadowBlurRadius,
-            spreadRadius: AppConfig.shadowSpreadRadius,
-            offset: const Offset(2, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(AppConfig.boxPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: AppConfig.titleFontSize,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Add Graph Icon
-          const Center(
-            child: Icon(Icons.auto_graph, size: 80, color: Colors.blue),
-          ),
-          const SizedBox(height: 16),
-          // Values below the graph icon
-          Expanded(
-            child: ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: values.length,
-              itemBuilder: (context, index) {
-                final valueParts = values[index].split(':');
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.remove,
-                          size: 16, color: Colors.grey), // Dash-like icon
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          valueParts[0].trim(),
-                          style: const TextStyle(
-                            fontSize: AppConfig.valueFontSize,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          valueParts[1].trim(),
-                          style: const TextStyle(
-                            fontSize: AppConfig.valueFontSize,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+ 
 
   // Widget for building the quick menu
   Widget _buildQuickMenu({
@@ -700,4 +594,138 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+ Widget orderCard(int n) {
+    return Container(
+      width: 300, // Adjust width as needed
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 39, 77, 41), // Dark green background
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Tracking Number',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                
+               child: button1(n),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          const Text(
+            '#2548658',
+            style: TextStyle(
+              color: Colors.yellow,
+              fontWeight: FontWeight.bold,
+              fontSize: 20.0,
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          const Row(
+            children: [
+              Icon(
+                Icons.person,
+                color: Colors.white,
+                size: 20.0,
+              ),
+              SizedBox(width: 8.0),
+              Text(
+                '12345777',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.0,
+                ),
+              ),
+                Spacer(), // This will push the Text to the right
+                Text(
+                '11/16/2024',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.0,
+                ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          const Row(
+            children: [
+              Icon(
+                Icons.warehouse,
+                color: Colors.white,
+                size: 20.0,
+              ),
+              SizedBox(width: 8.0),
+              Text(
+                'Warehouse',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.0,
+                ),
+              ),
+                Spacer(), // This will push the Text to the right
+                Text(
+                '11/16/2024',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.0,
+                ),
+                ),
+            ],
+          ),
+          
+        ],
+      ),
+    );
+  }
+  Widget button1(int n) {
+  String buttonText;
+  Color buttonColor;
+
+  switch (n) {
+    case 1:
+      buttonText = 'Pending';
+      buttonColor = Colors.orange;
+      break;
+    case 2:
+      buttonText = 'Completed';
+      buttonColor = Colors.blue;
+      break;
+    case 3:
+      buttonText = 'Approved';
+      buttonColor = Colors.green;
+      break;
+    default:
+      buttonText = 'Pending';
+      buttonColor = Colors.orange;
+  }
+
+  return ElevatedButton(
+    onPressed: () {},
+    style: ElevatedButton.styleFrom(
+      backgroundColor: buttonColor,
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+    ),
+    child: Text(
+      buttonText,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
+}
+
 }
