@@ -5,64 +5,119 @@ class CustomBottomNavigationBar extends StatelessWidget {
   final ValueChanged<int> onItemTapped;
 
   const CustomBottomNavigationBar({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onItemTapped,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
-        height: 100.0, // Increase height for more space
-        margin: const EdgeInsets.only(
-            bottom: 10.0,
-            left: 10.0,
-            right: 10.0), // Add bottom margin to give the "hanging" effect
+        height: 70.0,
+        margin: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
         decoration: BoxDecoration(
-          color: Colors.lightGreen.shade200,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(35.0),
-            topRight: Radius.circular(35.0),
-            bottomLeft: Radius.circular(35.0),
-            bottomRight: Radius.circular(35.0),
-          ),
+          color: Colors.deepPurple.shade100, // White background for the bar
+          borderRadius: BorderRadius.circular(25.0), // Rounded edges
           boxShadow: const [
             BoxShadow(
-              color: Colors.black26,
-              blurRadius: 6.0,
-              spreadRadius: 2.0,
-              offset: Offset(0, 3), // Shadow for the hanging effect
+              color: Colors.black26, // Shadow for the bar
+              blurRadius: 10.0,
+              offset: Offset(0, 4),
             ),
           ],
         ),
-        child: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+        child: Stack(
+          clipBehavior: Clip.none, // Allows floating QR icon
+          children: [
+            Positioned.fill(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  // Home Icon
+                  GestureDetector(
+                    onTap: () => onItemTapped(0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.home_outlined,
+                          color: currentIndex == 0 ? Colors.blue : Colors.black,
+                          size: 45.0,
+                        ),
+                        Text(
+                          'Home',
+                          style: TextStyle(
+                            color:
+                                currentIndex == 0 ? Colors.blue : Colors.black,
+                            fontSize: 16.0,
+                            fontWeight: currentIndex == 0
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Spacer for QR scanner
+                  const SizedBox(width: 70.0),
+                  // Profile Icon
+                  GestureDetector(
+                    onTap: () => onItemTapped(2),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.account_circle_outlined,
+                          color: currentIndex == 2 ? Colors.blue : Colors.black,
+                          size: 45.0,
+                        ),
+                        Text(
+                          'Account',
+                          style: TextStyle(
+                            color:
+                                currentIndex == 2 ? Colors.blue : Colors.black,
+                            fontSize: 16.0,
+                            fontWeight: currentIndex == 2
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.qr_code_scanner),
-              label: 'Scan QR',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              label: 'Account',
+            // Floating QR Scanner Icon
+            Positioned(
+              top: -10.0,
+              bottom: -10, // Floating effect
+              left: MediaQuery.of(context).size.width / 2 - 80,
+              child: GestureDetector(
+                onTap: () => onItemTapped(1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue, // Background color of floating button
+                    shape: BoxShape.circle,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10.0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(15.0),
+                  child: Icon(
+                    Icons.qr_code_scanner,
+                    color: currentIndex == 1 ? Colors.white : Colors.black,
+                    size: 60.0, // Ensures the QR icon size is consistent
+                  ),
+                ),
+              ),
             ),
           ],
-          currentIndex: currentIndex,
-          iconSize: 30.0, // Increase the size of the icons
-          selectedFontSize: 16.0, // Larger font for selected items
-          unselectedFontSize: 14.0, // Font size for unselected items
-          selectedItemColor: Colors.purple,
-          backgroundColor: Colors
-              .transparent, // Transparent background for the bottom bar itself
-          selectedLabelStyle:
-              TextStyle(fontWeight: FontWeight.bold), // Bold text for selected
-          unselectedLabelStyle: TextStyle(
-              fontWeight: FontWeight.w500), // Semi-bold text for unselected
-          onTap: onItemTapped,
         ),
       ),
     );

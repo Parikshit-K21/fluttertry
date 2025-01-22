@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login/Pages/ProfilePage/Profile.dart';
+import 'package:login/Pages/ProfilePage/view_oder.dart';
 import 'package:login/Pages/Reports/RetailerEntry.dart';
 import 'package:login/Logic/carousal.dart';
 
@@ -10,6 +11,9 @@ import 'package:login/custom_app_bar/app_bar.dart';
 import 'package:login/Logic/QR_scanner.dart';
 
 import 'package:flutter/foundation.dart';
+
+
+import 'package:flutter/animation.dart';
 
 void main() {
   runApp(const ContentPage());
@@ -22,49 +26,31 @@ class ContentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      
-      home: defaultTargetPlatform == TargetPlatform.iOS ||
-            defaultTargetPlatform == TargetPlatform.android
-          ? const HomeMobile()
-          : const HomePage(),
+      home: HomeMobile(),
     );
   }
 }
 
 class AppConfig {
   static const double smallScreenBreakpoint = 800.0;
-
-  // Box padding
   static const double boxPadding = 16.0;
-
-  // Default box styles
   static const double borderRadius = 8.0;
   static const double shadowBlurRadius = 6.0;
   static const double shadowSpreadRadius = 2.0;
-
-  // Colors
-  static const Color boxBackgroundColor = Color.fromARGB(255, 212, 197, 174);
-  static const Color boxShadowColor = Colors.grey;
-  static const Color borderColor = Colors.cyan;
-
-  // Font sizes
+  static final Color boxBackgroundColor = Colors.blue.shade200;
+  static const Color boxShadowColor = Colors.black26;
+  static const Color borderColor = Colors.grey;
   static const double titleFontSize = 16.0;
   static const double valueFontSize = 12.0;
-
-  // Hardcoded values
   static const Map<String, List<String>> boxContents = {
-    'Credit Limit': [
-      'Credit Limit: 0',
-      'Open Billing: 0',
-      'Open Order: 0',
-    ],
+    'Credit Limit': ['Credit Limit: 0', 'Open Billing: 0', 'Open Order: 0'],
     'Primary Sale': [
       'WC: 0',
       'WCP: 0',
       'VAP: 0',
       'Primer: 0',
       'Water Proofing Compound: 0',
-      'Distemper: 0',
+      'Distemper: 0'
     ],
     'Secondary Sale': [
       'WC: 0',
@@ -72,7 +58,7 @@ class AppConfig {
       'VAP: 0',
       'Primer: 0',
       'Water Proofing Compound: 0',
-      'Distemper: 0',
+      'Distemper: 0'
     ],
     'My Network': [
       'Total Unique Billed: 0',
@@ -81,7 +67,7 @@ class AppConfig {
       'VAP: 0',
       'Primer: 0',
       'Water Proofing Compound: 0',
-      'Distemper: 0',
+      'Distemper: 0'
     ],
   };
 }
@@ -91,12 +77,48 @@ class HomeMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return HomeBase(
+      isMobile: true,
+      quickMenuItems: _quickMenuItems,
+     orderItems: _orderItems,
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return HomeBase(
+      isMobile: false,
+      quickMenuItems: _quickMenuItems,
+      orderItems: _orderItems,
+    );
+  }
+}
+
+class HomeBase extends StatelessWidget {
+  final bool isMobile;
+  final List<Map<String, dynamic>> quickMenuItems;
+  final List<Map<String, dynamic>> orderItems;
+
+  const HomeBase({
+    required this.isMobile,
+    required this.quickMenuItems,
+    required this.orderItems,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallScreen = screenWidth < AppConfig.smallScreenBreakpoint;
+    
+    int _selectedIndex = 0;
 
-    int selectedIndex = 0;
-
-    void onItemTapped(int index) {
+    void _onItemTapped(int index) {
       if (index == 0) {
         Navigator.pushReplacement(
           context,
@@ -116,82 +138,112 @@ class HomeMobile extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar:  CustomAppBar(),
+      extendBody: true,
+      appBar: const CustomAppBar(),
       endDrawer: const CustomSidebar(),
-      body: Container(
-        // color: const Color.fromARGB(255, 247,230,202),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Static Heading bar
-            
-
-            // Scrollable content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Carousel with padding
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                        horizontal: AppConfig.boxPadding,
-                      ),
-                      child: const CustomCarousel(),
+      body: Stack(
+        children: [
+          // Main content
+          Container(
+            color: Colors.grey.shade300,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16.0, horizontal: AppConfig.boxPadding),
+                          child: const CustomCarousel(),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16.0, horizontal: AppConfig.boxPadding),
+                          child: PointsWidget(),
+                        ), // Add the PointsWidget here
+                        _buildHorizontalQuickMenu(),
+                        
+                        _buildOrderCards(),
+                        Padding(
+                          padding: const EdgeInsets.all(AppConfig.boxPadding),
+                          child: _buildBoxesLayout(isMobile, isSmallScreen,
+                              screenWidth, screenHeight),
+                        ),
+                      ],
                     ),
-
-                    // Main content
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          // Boxes layout for mobile
-                          Column(
-                            children: AppConfig.boxContents.entries
-                                .map((entry) => _buildBox(
-                                      title: entry.key,
-                                      values: entry.value,
-                                      height: screenHeight / 4,
-                                      width: screenWidth,
-                                    ))
-                                .toList(),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Quick Menu for mobile
-                          _buildQuickMenu(
-                            screenWidth: screenWidth,
-                            screenHeight: screenHeight / 3,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Floating Bottom Navigation Bar
+          if (isMobile)
+            Positioned(
+              left: 20.0,
+              right: 20.0,
+              bottom: 10.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30.0),
+                child: Container(
+                  color:
+                      Colors.transparent, // Ensure no background blocks content
+                  child: CustomBottomNavigationBar(
+                    currentIndex: _selectedIndex,
+                    onItemTapped: (index) {
+                      _selectedIndex = index;
+                      _onItemTapped(index);
+                    },
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: selectedIndex,
-        onItemTapped: (index) {
-          selectedIndex = index;
-          onItemTapped(index);
-        },
+        ],
       ),
     );
   }
 
-  // Widget for building individual boxes
-  Widget _buildBox({
-    required String title,
-    required List<String> values,
-    required double width,
-    required double height,
-  }) {
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(AppConfig.boxPadding),
+      color: Colors.blue.shade50,
+      child: const Center(
+        child: Text(
+          'Birla White',
+          style: TextStyle(
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBoxesLayout(bool isMobile, bool isSmallScreen,
+      double screenWidth, double screenHeight) {
+    final boxContents = AppConfig.boxContents.entries.map((entry) => _buildBox(
+          title: entry.key,
+          values: entry.value,
+          width: isMobile || isSmallScreen
+              ? screenWidth
+              : (screenWidth / 4) - (AppConfig.boxPadding * 2),
+          height: isMobile || isSmallScreen
+              ? (screenHeight / (isSmallScreen ? 2 : 4)) - AppConfig.boxPadding
+              : screenHeight / 2,
+        ));
+    return isMobile || isSmallScreen
+        ? Column(children: boxContents.toList())
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: boxContents.toList());
+  }
+
+  Widget _buildBox(
+      {required String title,
+      required List<String> values,
+      required double width,
+      required double height}) {
     return Container(
       width: width,
       height: height,
@@ -217,10 +269,9 @@ class HomeMobile extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: AppConfig.titleFontSize,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+                  fontSize: AppConfig.titleFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
             ),
           ),
           const SizedBox(height: 16),
@@ -239,17 +290,15 @@ class HomeMobile extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.remove,
-                          size: 16, color: Colors.grey), // Dash-like icon
+                      const Icon(Icons.remove, size: 16, color: Colors.grey),
                       const SizedBox(width: 8),
                       Expanded(
                         flex: 2,
                         child: Text(
                           valueParts[0].trim(),
                           style: const TextStyle(
-                            fontSize: AppConfig.valueFontSize,
-                            color: Colors.black54,
-                          ),
+                              fontSize: AppConfig.valueFontSize,
+                              color: Colors.black54),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -258,10 +307,9 @@ class HomeMobile extends StatelessWidget {
                         child: Text(
                           valueParts[1].trim(),
                           style: const TextStyle(
-                            fontSize: AppConfig.valueFontSize,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                              fontSize: AppConfig.valueFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black),
                         ),
                       ),
                     ],
@@ -275,93 +323,61 @@ class HomeMobile extends StatelessWidget {
     );
   }
 
-  // Widget for building the quick menu
-  Widget _buildQuickMenu({
-    required double screenWidth,
-    required double screenHeight,
-  }) {
-    final iconNames = [
-      'Retailer Registration',
-      'Order History',
-      'Sales Report',
-      'Inventory',
-      'Settings',
-      'Help Center',
-      'Customer Support',
-      'Analytics',
-      'Promotions',
-      'Account Management',
-      'Delivery Status',
-      'Feedback',
-    ];
-
+  Widget _buildHorizontalQuickMenu() {
     return Container(
-      width: screenWidth,
-      height: screenHeight,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 6.0,
-            spreadRadius: 2.0,
-            offset: const Offset(2, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Quick Menu',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: iconNames.length,
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: quickMenuItems.length,
               itemBuilder: (context, index) {
+                final item = quickMenuItems[index];
                 return GestureDetector(
-                  onTap: () {
-                    if (iconNames[index] == 'Retailer Registration') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RetailerRegistrationApp(),
+                  onTap: () => _handleQuickMenuItemTap(context, item['label']),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 70,
+                        height: 70,
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4.0,
+                              spreadRadius: 2.0,
+                              offset: const Offset(2, 2),
+                            ),
+                          ],
                         ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.analytics,
-                            size: 36, color: Colors.black),
-                        const SizedBox(height: 8),
-                        Text(
-                          iconNames[index],
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black),
+                        child: Icon(
+                          item['icon'] as IconData,
+                          size: 36,
+                          color: Colors.black,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item['label'].replaceAll(' ', '\n') as String,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -371,325 +387,366 @@ class HomeMobile extends StatelessWidget {
       ),
     );
   }
+
+  void _handleQuickMenuItemTap(BuildContext context, String label) {
+    if (label == 'Retailer Registration') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const RetailerRegistrationApp()),
+      );
+    } else if (label == 'Order History') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ManageOrderPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$label clicked')),
+      );
+    }
+  }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+final List<Map<String, dynamic>> _quickMenuItems = [
+  {'icon': Icons.app_registration, 'label': 'Retailer Registration'},
+  {'icon': Icons.history, 'label': 'Order History'},
+  {'icon': Icons.bar_chart, 'label': 'Sales Report'},
+  {'icon': Icons.inventory, 'label': 'Inventory'},
+  {'icon': Icons.settings, 'label': 'Settings'},
+  {'icon': Icons.help, 'label': 'Help Center'},
+  {'icon': Icons.support_agent, 'label': 'Customer Support'},
+  {'icon': Icons.analytics, 'label': 'Analytics'},
+  {'icon': Icons.campaign, 'label': 'Promotions'},
+  {'icon': Icons.account_circle, 'label': 'Account Management'},
+  {'icon': Icons.local_shipping, 'label': 'Delivery Status'},
+  {'icon': Icons.feedback, 'label': 'Feedback'},
+];
+
+
+class PointsWidget extends StatefulWidget {
+  const PointsWidget({super.key});
+
+  @override
+  _PointsWidgetState createState() => _PointsWidgetState();
+}
+
+class _PointsWidgetState extends State<PointsWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<int> _animation;
+
+  @override
+  void initState() {
+    final coins = 5000;
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 7),
+      vsync: this,
+    );
+
+    _animation = IntTween(begin: 0, end: coins).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final isSmallScreen = screenWidth < AppConfig.smallScreenBreakpoint;
-
-    return Scaffold(
-      appBar:  CustomAppBar(),
-      endDrawer: const CustomSidebar(),
-      body: Container(
-        color: const Color.fromARGB(255, 247,230,202),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Scrollable content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Carousel with padding
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                        horizontal: AppConfig.boxPadding,
-                      ),
-                      child: const CustomCarousel(),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("backg.jpeg"),
+          fit: BoxFit.cover
+        ),
+        
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4.0,
+            spreadRadius: 1.0,
+            offset: const Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left Coin Image without circular shape
+          Flexible(child: 
+          Container(
+            height: 50, // Adjust size to fill container
+            width: 120, // Adjust size to fill container
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: const Center(
+              child: Image(
+                
+                image: AssetImage('coin1.jpeg'),
+                fit: BoxFit.cover, // Cover to fill the container
+                height: 70,
+                width: 120,
+              ),
+            ),
+          ),),
+          // Points Text with Dollar sign
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'MY POINTS',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-
-                    Padding(
-                      padding: const EdgeInsets.all(AppConfig.boxPadding),
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [ Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                        const Text(
-                        'Order History',
+                  ),
+                  const SizedBox(
+                      width: 8.0), // Space between text and dollar sign
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '\$', // Dollar sign inside circle
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
-                        ),
-                            const SizedBox(), // Empty widget for spacing
-                            TextButton(
-                              child: Text('view all',
-                                style: const TextStyle( 
-                                  fontSize: 18,
-                                  color: Colors.white,
-                              )),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                        ],
-                        ),),
-                        const SizedBox(height: 16),
-                        SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                          orderCard(1),
-                          const SizedBox(width: 16),
-                          orderCard(2),
-                          const SizedBox(width: 16), 
-                          orderCard(3)
-                          ],
-                        ),
-                        
-                        ),
-                    // Main content
-                   
-
-                          const SizedBox(height: 16),
-
-                          // Quick Menu layout adjustment based on screen size
-                          if (isSmallScreen)
-                            _buildQuickMenu(
-                              isSmallScreen: isSmallScreen,
-                              screenWidth: screenWidth,
-                              screenHeight: screenHeight,
-                            )
-                          else
-                            _buildQuickMenu(
-                              isSmallScreen: isSmallScreen,
-                              screenWidth: screenWidth,
-                              screenHeight: screenHeight,
-                            ),
-                        ],
                       ),
                     ),
-        ),
-        ],
-                ),
+                  ),
+                ],
               ),
-            
-        );
-  }
-
-  // Widget for building individual boxes
- 
-
-  // Widget for building the quick menu
-  Widget _buildQuickMenu({
-    required bool isSmallScreen,
-    required double screenWidth,
-    required double screenHeight,
-  }) {
-    final iconNames = [
-      'Retailer Registration',
-      'Order History',
-      'Sales Report',
-      'Inventory',
-      'Settings',
-      'Help Center',
-      'Customer Support',
-      'Analytics',
-      'Promotions',
-      'Account Management',
-      'Delivery Status',
-      'Feedback',
-    ];
-
-    return Padding(
-      padding: EdgeInsets.only(
-        left: isSmallScreen ? 0 : AppConfig.boxPadding * 2,
-        top: AppConfig.boxPadding,
-        bottom: AppConfig.boxPadding * 2,
-      ),
-      child: Align(
-        alignment: isSmallScreen ? Alignment.center : Alignment.topLeft,
-        child: Container(
-          width: isSmallScreen
-              ? double.infinity
-              : screenWidth * 0.4, // Adjust width for larger screens
-          height: screenHeight / 2, // Fixed height
-          decoration: BoxDecoration(
-            color: AppConfig.boxBackgroundColor,
-            borderRadius: BorderRadius.circular(AppConfig.borderRadius),
-            boxShadow: [
-              BoxShadow(
-                color: AppConfig.boxShadowColor,
-                blurRadius: AppConfig.shadowBlurRadius,
-                spreadRadius: AppConfig.shadowSpreadRadius,
-                offset: const Offset(2, 2),
+              const SizedBox(height: 4.0),
+              AnimatedBuilder(
+                animation: _animation,
+                builder: (context, child) {
+                  return Text(
+                    _animation.value.toString(),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  );
+                },
               ),
             ],
           ),
-          padding: const EdgeInsets.all(AppConfig.boxPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Quick Menu',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+          // Right Coin Image without circular shape
+          Container(
+            height: 75, // Adjust size to fill container
+            width: 110, // Adjust size to fill container
+            decoration: BoxDecoration(
+              color: Colors.transparent, // Transparent background
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: const Center(
+              child: Image(
+                image: AssetImage('coin2.jpeg'),
+                fit: BoxFit.cover, // Cover to fill the container
+                height: 50,
+                width: 50,
               ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3, // 3x3 grid
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: iconNames.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          if (iconNames[index] == 'Retailer Registration') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const RetailerRegistrationApp(),
-                              ),
-                            );
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppConfig.borderColor),
-                            borderRadius:
-                                BorderRadius.circular(AppConfig.borderRadius),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.analytics,
-                                  size: 36, color: Colors.black),
-                              const SizedBox(height: 8),
-                              Text(
-                                iconNames[index],
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+final List<Map<String, dynamic>> _orderItems=[
+
+        {
+          'title': 'Order 1',
+          'status': '1',
+          'trackingNumber': '#2548658',
+          'orderNumber': '12345777',
+          'warehouse': 'Warehouse',
+          'date': '11/16/2024',
+        },
+        {
+          'title': 'Order 2',
+          'status': '3',
+          'trackingNumber': '#2548659',
+          'orderNumber': '12345778',
+          'warehouse': 'Warehouse',
+          'date': '11/16/2024',
+        },
+        {
+          'title': 'Order 3',
+          'status': '2',
+          'trackingNumber': '#2548660',
+          'orderNumber': '12345779',
+          'warehouse': 'Warehouse',
+          'date': '11/16/2024',
+        },
+      ];
+
+
+Widget orderCard(int index) {
+  // Get the item from _orderItems using the index
+  final orderData = _orderItems[index];
+  
+  return Container(
+    width: 300,
+    padding: const EdgeInsets.all(12.0),
+    decoration: BoxDecoration(
+      color: Colors.blue.shade200,
+      borderRadius: BorderRadius.circular(10.0),
+    ),
+    child: Column(
+      
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row( children: [ Padding(
+          padding: EdgeInsets.only(left: 0),
+          child: Text(
+            'Tracking number',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black
+            ),
+          ),
+        ),
+        Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 1.0),
+          child: button1(int.parse(orderData['status'])), // Convert status string to int
+        ),]),
+        const SizedBox(height: 8.0),
+      Text(
+      orderData['trackingNumber'], // Use tracking number from data
+      style: const TextStyle(
+        color: Color.fromARGB(255, 59, 88, 255),
+        fontWeight: FontWeight.bold,
+        fontSize: 20.0,
+      ),
+      ),
+      const SizedBox(height: 16.0),
+      Row(
+      children: [
+        const Icon(
+        Icons.person,
+        color: Colors.white,
+        size: 20.0,
+        ),
+        const SizedBox(width: 8.0),
+        Text(
+        orderData['orderNumber'], // Use order number from data
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14.0,
+        ),
+        ),
+        const Spacer(),
+        Text(
+        orderData['date'], // Use date from data
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12.0,
+        ),
+        ),
+      ],
+      ),
+      const SizedBox(height: 8.0),
+      Row(
+      children: [
+        const Icon(
+        Icons.warehouse,
+        color: Colors.white,
+        size: 20.0,
+        ),
+        const SizedBox(width: 8.0),
+        Text(
+        orderData['warehouse'], // Use warehouse from data
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14.0,
+        ),
+        ),
+        const Spacer(),
+        Text(
+        orderData['date'], // Use date from data
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12.0,
+        ),
+        ),
+      ],
+      ),
+  ]
+  ));
+  }
+  
+ Widget _buildOrderCards() {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 8.0),
+          child: Text(
+            'Orders Overview',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        SizedBox(
+            height: 150, // Increased height
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              children: List.generate(
+                _orderItems.length,
+                (index) => Container(
+                  margin: const EdgeInsets.only(right: 16.0),
+                  width: 280,
+                  child: FittedBox(
+                    fit: BoxFit.fill,
+                    child: orderCard(index),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
- Widget orderCard(int n) {
-    return Container(
-      width: 300, // Adjust width as needed
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 39, 77, 41), // Dark green background
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Tracking Number',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.0,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                
-               child: button1(n),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8.0),
-          const Text(
-            '#2548658',
-            style: TextStyle(
-              color: Colors.yellow,
-              fontWeight: FontWeight.bold,
-              fontSize: 20.0,
             ),
-          ),
-          const SizedBox(height: 16.0),
-          const Row(
-            children: [
-              Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 20.0,
-              ),
-              SizedBox(width: 8.0),
-              Text(
-                '12345777',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.0,
-                ),
-              ),
-                Spacer(), // This will push the Text to the right
-                Text(
-                '11/16/2024',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.0,
-                ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8.0),
-          const Row(
-            children: [
-              Icon(
-                Icons.warehouse,
-                color: Colors.white,
-                size: 20.0,
-              ),
-              SizedBox(width: 8.0),
-              Text(
-                'Warehouse',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.0,
-                ),
-              ),
-                Spacer(), // This will push the Text to the right
-                Text(
-                '11/16/2024',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.0,
-                ),
-                ),
-            ],
-          ),
           
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+
+
+}
   Widget button1(int n) {
   String buttonText;
   Color buttonColor;
@@ -728,4 +785,3 @@ class HomePage extends StatelessWidget {
   );
 }
 
-}
