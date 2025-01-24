@@ -6,7 +6,7 @@ class ManageOrderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use the global productList
+    // Use the global productList 
     List<Map<String, dynamic>> productList = global_state.productList;
 
     // Group products by scheduleDate

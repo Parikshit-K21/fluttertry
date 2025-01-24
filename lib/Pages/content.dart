@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:login/Pages/Orders/orderTrack.dart';
 import 'package:login/Pages/ProfilePage/Profile.dart';
-import 'package:login/Pages/ProfilePage/view_oder.dart';
+import 'package:login/Pages/Orders/view_oder.dart';
 import 'package:login/Pages/Reports/RetailerEntry.dart';
 import 'package:login/Logic/carousal.dart';
 
@@ -167,7 +168,7 @@ class HomeBase extends StatelessWidget {
                         ), // Add the PointsWidget here
                         _buildHorizontalQuickMenu(),
                         
-                        _buildOrderCards(),
+                        _buildOrderCards(context),
                         Padding(
                           padding: const EdgeInsets.all(AppConfig.boxPadding),
                           child: _buildBoxesLayout(isMobile, isSmallScreen,
@@ -605,7 +606,7 @@ final List<Map<String, dynamic>> _orderItems=[
       ];
 
 
-Widget orderCard(int index) {
+Widget orderCard(int index, BuildContext context) {
   // Get the item from _orderItems using the index
   final orderData = _orderItems[index];
   
@@ -633,7 +634,7 @@ Widget orderCard(int index) {
         Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 1.0),
-          child: button1(int.parse(orderData['status'])), // Convert status string to int
+          child: button1(context,int.parse(orderData['status'])), // Convert status string to int
         ),]),
         const SizedBox(height: 8.0),
       Text(
@@ -702,7 +703,7 @@ Widget orderCard(int index) {
   ));
   }
   
- Widget _buildOrderCards() {
+ Widget _buildOrderCards(BuildContext context) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
     child: Column(
@@ -734,7 +735,7 @@ Widget orderCard(int index) {
                   width: 280,
                   child: FittedBox(
                     fit: BoxFit.fill,
-                    child: orderCard(index),
+                    child: orderCard(index, context),
                   ),
                 ),
               ),
@@ -747,7 +748,7 @@ Widget orderCard(int index) {
 
 
 }
-  Widget button1(int n) {
+  Widget button1(BuildContext context, int n) {
   String buttonText;
   Color buttonColor;
 
@@ -770,7 +771,12 @@ Widget orderCard(int index) {
   }
 
   return ElevatedButton(
-    onPressed: () {},
+    onPressed: () { 
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => OrderTimelineScreen(n: n)),
+      );
+    },
     style: ElevatedButton.styleFrom(
       backgroundColor: buttonColor,
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),

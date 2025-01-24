@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:login/Logic/QR_scanner.dart';
 import 'package:login/Pages/ProfilePage/Addhar.dart';
-import 'package:login/Pages/ProfilePage/view_oder.dart';
+import 'package:login/Pages/Orders/view_oder.dart';
 import 'package:login/Pages/content.dart';
 
 import 'package:login/custom_app_bar/bottom_nav_bar.dart';

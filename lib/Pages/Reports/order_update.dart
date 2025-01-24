@@ -104,7 +104,7 @@ class _OrderEntryState extends State<OrderUpdate> {
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
 
     return Scaffold(
-      appBar:  CustomAppBar(),
+      appBar: const CustomAppBar(),
       endDrawer: const CustomSidebar(),
       body: Container(
         color: Colors.blue.shade600,
