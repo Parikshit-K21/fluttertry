@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:login/Pages/Orders/orderTrack.dart';
-import 'package:login/Pages/ProfilePage/Profile.dart';
-import 'package:login/Pages/Orders/view_oder.dart';
-import 'package:login/Pages/Reports/RetailerEntry.dart';
+import 'package:login/Logic/QR_scanner.dart';
 import 'package:login/Logic/carousal.dart';
-
+import 'package:login/Pages/MobileContents/Ordercard.dart';
+import 'package:login/Pages/MobileContents/mFrontPage.dart';
+import 'package:login/Pages/Orders/view_oder.dart';
+import 'package:login/Pages/ProfilePage/Profile.dart';
+import 'package:login/Pages/Reports/RetailerEntry.dart';
 import 'package:login/custom_app_bar/bottom_nav_bar.dart';
+
 import 'package:login/custom_app_bar/side_bar.dart';
 import 'package:login/custom_app_bar/app_bar.dart';
 
-import 'package:login/Logic/QR_scanner.dart';
+// import 'package:login/QR_scanner.dart';
 
 import 'package:flutter/foundation.dart';
 
-
-import 'package:flutter/animation.dart';
 
 void main() {
   runApp(const ContentPage());
@@ -27,7 +27,8 @@ class ContentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeMobile(),
+
+      home:  kIsWeb ? const HomePage() : const Mfrontpage(),
     );
   }
 }
@@ -38,7 +39,7 @@ class AppConfig {
   static const double borderRadius = 8.0;
   static const double shadowBlurRadius = 6.0;
   static const double shadowSpreadRadius = 2.0;
-  static final Color boxBackgroundColor = Colors.blue.shade200;
+  static const Color boxBackgroundColor = Colors.white;
   static const Color boxShadowColor = Colors.black26;
   static const Color borderColor = Colors.grey;
   static const double titleFontSize = 16.0;
@@ -81,7 +82,6 @@ class HomeMobile extends StatelessWidget {
     return HomeBase(
       isMobile: true,
       quickMenuItems: _quickMenuItems,
-     orderItems: _orderItems,
     );
   }
 }
@@ -94,7 +94,6 @@ class HomePage extends StatelessWidget {
     return HomeBase(
       isMobile: false,
       quickMenuItems: _quickMenuItems,
-      orderItems: _orderItems,
     );
   }
 }
@@ -102,12 +101,10 @@ class HomePage extends StatelessWidget {
 class HomeBase extends StatelessWidget {
   final bool isMobile;
   final List<Map<String, dynamic>> quickMenuItems;
-  final List<Map<String, dynamic>> orderItems;
 
   const HomeBase({
     required this.isMobile,
     required this.quickMenuItems,
-    required this.orderItems,
     super.key,
   });
 
@@ -116,7 +113,7 @@ class HomeBase extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final isSmallScreen = screenWidth < AppConfig.smallScreenBreakpoint;
-    
+
     int _selectedIndex = 0;
 
     void _onItemTapped(int index) {
@@ -139,14 +136,14 @@ class HomeBase extends StatelessWidget {
     }
 
     return Scaffold(
-      extendBody: true,
+      extendBody: false,
       appBar: const CustomAppBar(),
       endDrawer: const CustomSidebar(),
       body: Stack(
         children: [
           // Main content
           Container(
-            color: Colors.grey.shade300,
+            color: const Color.fromARGB(255, 149, 199, 233),// background color
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -166,9 +163,8 @@ class HomeBase extends StatelessWidget {
                               vertical: 16.0, horizontal: AppConfig.boxPadding),
                           child: PointsWidget(),
                         ), // Add the PointsWidget here
-                        _buildHorizontalQuickMenu(),
-                        
-                        _buildOrderCards(context),
+                        buildHorizontalQuickMenu(),
+                        buildOrderCards(context),
                         Padding(
                           padding: const EdgeInsets.all(AppConfig.boxPadding),
                           child: _buildBoxesLayout(isMobile, isSmallScreen,
@@ -324,70 +320,11 @@ class HomeBase extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalQuickMenu() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Quick Menu',
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 120,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: quickMenuItems.length,
-              itemBuilder: (context, index) {
-                final item = quickMenuItems[index];
-                return GestureDetector(
-                  onTap: () => _handleQuickMenuItemTap(context, item['label']),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 70,
-                        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 4.0,
-                              spreadRadius: 2.0,
-                              offset: const Offset(2, 2),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          item['icon'] as IconData,
-                          size: 36,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        item['label'].replaceAll(' ', '\n') as String,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+ 
+            
+            
+   
+  
 
   void _handleQuickMenuItemTap(BuildContext context, String label) {
     if (label == 'Retailer Registration') {
@@ -423,7 +360,6 @@ final List<Map<String, dynamic>> _quickMenuItems = [
   {'icon': Icons.local_shipping, 'label': 'Delivery Status'},
   {'icon': Icons.feedback, 'label': 'Feedback'},
 ];
-
 
 class PointsWidget extends StatefulWidget {
   const PointsWidget({super.key});
@@ -576,218 +512,3 @@ class _PointsWidgetState extends State<PointsWidget>
     );
   }
 }
-
-final List<Map<String, dynamic>> _orderItems=[
-
-        {
-          'title': 'Order 1',
-          'status': '1',
-          'trackingNumber': '#2548658',
-          'orderNumber': '12345777',
-          'warehouse': 'Warehouse',
-          'date': '11/16/2024',
-        },
-        {
-          'title': 'Order 2',
-          'status': '3',
-          'trackingNumber': '#2548659',
-          'orderNumber': '12345778',
-          'warehouse': 'Warehouse',
-          'date': '11/16/2024',
-        },
-        {
-          'title': 'Order 3',
-          'status': '2',
-          'trackingNumber': '#2548660',
-          'orderNumber': '12345779',
-          'warehouse': 'Warehouse',
-          'date': '11/16/2024',
-        },
-      ];
-
-
-Widget orderCard(int index, BuildContext context) {
-  // Get the item from _orderItems using the index
-  final orderData = _orderItems[index];
-  
-  return Container(
-    width: 300,
-    padding: const EdgeInsets.all(12.0),
-    decoration: BoxDecoration(
-      color: Colors.blue.shade200,
-      borderRadius: BorderRadius.circular(10.0),
-    ),
-    child: Column(
-      
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row( children: [ Padding(
-          padding: EdgeInsets.only(left: 0),
-          child: Text(
-            'Tracking number',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black
-            ),
-          ),
-        ),
-        Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 1.0),
-          child: button1(context,int.parse(orderData['status'])), // Convert status string to int
-        ),]),
-        const SizedBox(height: 8.0),
-      Text(
-      orderData['trackingNumber'], // Use tracking number from data
-      style: const TextStyle(
-        color: Color.fromARGB(255, 59, 88, 255),
-        fontWeight: FontWeight.bold,
-        fontSize: 20.0,
-      ),
-      ),
-      const SizedBox(height: 16.0),
-      Row(
-      children: [
-        const Icon(
-        Icons.person,
-        color: Colors.white,
-        size: 20.0,
-        ),
-        const SizedBox(width: 8.0),
-        Text(
-        orderData['orderNumber'], // Use order number from data
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14.0,
-        ),
-        ),
-        const Spacer(),
-        Text(
-        orderData['date'], // Use date from data
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12.0,
-        ),
-        ),
-      ],
-      ),
-      const SizedBox(height: 8.0),
-      Row(
-      children: [
-        const Icon(
-        Icons.warehouse,
-        color: Colors.white,
-        size: 20.0,
-        ),
-        const SizedBox(width: 8.0),
-        Text(
-        orderData['warehouse'], // Use warehouse from data
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14.0,
-        ),
-        ),
-        const Spacer(),
-        Text(
-        orderData['date'], // Use date from data
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12.0,
-        ),
-        ),
-      ],
-      ),
-  ]
-  ));
-  }
-  
- Widget _buildOrderCards(BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 8.0),
-          child: Text(
-            'Orders Overview',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        SizedBox(
-            height: 150, // Increased height
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              children: List.generate(
-                _orderItems.length,
-                (index) => Container(
-                  margin: const EdgeInsets.only(right: 16.0),
-                  width: 280,
-                  child: FittedBox(
-                    fit: BoxFit.fill,
-                    child: orderCard(index, context),
-                  ),
-                ),
-              ),
-            ),
-          
-        ),
-      ],
-    ),
-  );
-
-
-}
-  Widget button1(BuildContext context, int n) {
-  String buttonText;
-  Color buttonColor;
-
-  switch (n) {
-    case 1:
-      buttonText = 'Pending';
-      buttonColor = Colors.orange;
-      break;
-    case 2:
-      buttonText = 'Completed';
-      buttonColor = Colors.blue;
-      break;
-    case 3:
-      buttonText = 'Approved';
-      buttonColor = Colors.green;
-      break;
-    default:
-      buttonText = 'Pending';
-      buttonColor = Colors.orange;
-  }
-
-  return ElevatedButton(
-    onPressed: () { 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => OrderTimelineScreen(n: n)),
-      );
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: buttonColor,
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-    ),
-    child: Text(
-      buttonText,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
-}
-

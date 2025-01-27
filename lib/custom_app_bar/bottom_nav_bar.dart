@@ -73,7 +73,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                           size: 45.0,
                         ),
                         Text(
-                          'Account',
+                          'Menu',
                           style: TextStyle(
                             color:
                                 currentIndex == 2 ? Colors.blue : Colors.black,
